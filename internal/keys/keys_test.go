@@ -3,6 +3,7 @@ package keys
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 )
 
@@ -32,8 +33,9 @@ func TestStore(t *testing.T) {
 	if err := s.Save(); err != nil {
 		t.Fatal(err)
 	}
+	// На Windows прав вида 0600 нет: доступ ограничивает папка профиля.
 	info, _ := os.Stat(filepath.Join(os.Getenv("B24_HOME"), "keys.json"))
-	if info.Mode().Perm() != 0o600 {
+	if runtime.GOOS != "windows" && info.Mode().Perm() != 0o600 {
 		t.Errorf("права файла %v", info.Mode().Perm())
 	}
 	s2, _ := Load()
