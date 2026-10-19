@@ -1,0 +1,54 @@
+name: Выпуск
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  test-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      # Хранилище проверяется по-настоящему: запись b24-test в Диспетчере учётных данных.
+      - run: go test ./...
+        env:
+          B24_KEYSTORE_TEST: "1"
+
+  build:
+    needs: test-windows
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      # На macOS в CI Связка ключей может требовать подтверждения — её тест только локально.
+      - run: go test ./...
+      - name: Сборка
+        run: |
+          set -eu
+          ver="${GITHUB_REF_NAME#v}"
+          flags="-s -w -X main.version=$ver"
+          mkdir -p dist
+          CGO_ENABLED=1 GOARCH=arm64 go build -trimpath -ldflags "$flags" -o dist/b24-darwin-arm64 ./cmd/b24
+          CGO_ENABLED=1 GOARCH=amd64 CC="clang -arch x86_64" go build -trimpath -ldflags "$flags" -o dist/b24-darwin-amd64 ./cmd/b24
+          lipo -create -output dist/b24-darwin-universal dist/b24-darwin-arm64 dist/b24-darwin-amd64
+          codesign --force --sign - dist/b24-darwin-universal
+          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -trimpath -ldflags "$flags" -o dist/b24-windows-amd64.exe ./cmd/b24
+          CGO_ENABLED=0 GOOS=windows GOARCH=arm64 go build -trimpath -ldflags "$flags" -o dist/b24-windows-arm64.exe ./cmd/b24
+          (cd skill && zip -qr ../dist/bitrix24-skill.zip bitrix24)
+          (cd dist && shasum -a 256 b24-* bitrix24-skill.zip > checksums.txt)
+      - name: Выпуск на GitHub
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/b24-darwin-universal dist/b24-windows-amd64.exe \
+            dist/b24-windows-arm64.exe dist/bitrix24-skill.zip dist/checksums.txt \
+            --title "b24 ${GITHUB_REF_NAME#v}" --notes "Установка — в README."
