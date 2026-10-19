@@ -94,5 +94,6 @@ b24 batch 'd=crm.deal.get?id=12' 'u=user.get?ID=$result[d][ASSIGNED_BY_ID]'
 Чтение или запись определяется по имени метода: последнее слово `get`,
 `list`, `fields`, `search`, `count`, `current` (и начинающиеся с `get…`) —
 чтение. Исключения, которые меняют портал, хотя звучат как чтение:
-`im.dialog.read`, `im.recent.hide`, `disk.file.getExternalLink` и подобные.
+`im.dialog.read`, `im.recent.hide`, `disk.file.getExternalLink`,
+`im.disk.folder.get` (возможно, создаёт папку чата) и подобные.
 Неизвестное — запись.

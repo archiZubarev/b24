@@ -43,7 +43,7 @@ func TestIsRead(t *testing.T) {
 	read := []string{"crm.deal.list", "crm.deal.get", "crm.item.list", "crm.deal.fields", "user.get", "profile", "scope",
 		"disk.folder.getchildren", "im.dialog.messages.get", "tasks.task.list", "crm.stagehistory.list", "user.search", "user.current"}
 	write := []string{"crm.deal.add", "crm.deal.update", "crm.deal.delete", "im.message.add", "im.dialog.read", "im.recent.hide",
-		"disk.file.getExternalLink", "bizproc.workflow.start", "tasks.task.complete", "crm.timeline.comment.add", "batch", "something.unknown"}
+		"disk.file.getExternalLink", "im.disk.folder.get", "bizproc.workflow.start", "tasks.task.complete", "crm.timeline.comment.add", "batch", "something.unknown"}
 	for _, m := range read {
 		if !IsRead(m) {
 			t.Errorf("%s должен быть чтением", m)

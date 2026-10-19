@@ -45,6 +45,7 @@ var writeExact = map[string]bool{
 	"im.recent.hide":                  true,
 	"im.recent.pin":                   true,
 	"im.recent.unread":                true,
+	"im.disk.folder.get":              true, // неясно, не создаёт ли папку чата, если её нет — пока не проверено обратное
 	"disk.file.getexternallink":       true, // создаёт публичную ссылку
 	"disk.folder.getexternallink":     true,
 	"im.notify.read":                  true,
