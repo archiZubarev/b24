@@ -15,15 +15,15 @@ func TestStore(t *testing.T) {
 	if _, err := s.Resolve(""); err == nil {
 		t.Fatal("пустой список: ждали ошибку")
 	}
-	s.Put(Key{Name: "fiztekh", Portal: "a.bitrix24.ru"})
-	if s.Default != "fiztekh" {
+	s.Put(Key{Name: "main", Portal: "a.bitrix24.ru"})
+	if s.Default != "main" {
 		t.Fatal("первый ключ должен стать основным")
 	}
 	s.Put(Key{Name: "Лаба", Portal: "b.bitrix24.ru"})
-	if k, _ := s.Resolve(""); k.Name != "fiztekh" {
+	if k, _ := s.Resolve(""); k.Name != "main" {
 		t.Fatal("пустое имя — основной ключ")
 	}
-	if err := s.Rename("FIZTEKH", "work"); err != nil || s.Default != "work" {
+	if err := s.Rename("MAIN", "work"); err != nil || s.Default != "work" {
 		t.Fatalf("rename: %v, основной %q", err, s.Default)
 	}
 	if err := s.Rename("work", "лаба"); err == nil {
