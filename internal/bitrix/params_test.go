@@ -22,6 +22,19 @@ func TestParseArgs(t *testing.T) {
 	}
 }
 
+// Оператор с «=» стоит внутри ключа: резать по нему нельзя (b24 0.1.1 из-за этого падал на >=CLOSEDATE).
+func TestParseArgsOperatorsWithEquals(t *testing.T) {
+	got, err := ParseArgs([]string{"filter[>=CLOSEDATE]=2025-01-01", "filter[<=CLOSEDATE]=2026-12-31", "filter[!=STAGE_ID]=NEW", "filter[%TITLE]=a=b"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, _ := json.Marshal(got)
+	want := `{"filter":{"!=STAGE_ID":"NEW","%TITLE":"a=b","\u003c=CLOSEDATE":"2026-12-31","\u003e=CLOSEDATE":"2025-01-01"}}`
+	if string(b) != want {
+		t.Fatalf("\n%s\n%s", b, want)
+	}
+}
+
 func TestUnslash(t *testing.T) {
 	for in, want := range map[string]string{
 		`"https:\/\/x.ru\/a"`: `"https://x.ru/a"`,

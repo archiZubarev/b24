@@ -13,7 +13,7 @@ import (
 func ParseArgs(args []string) (map[string]any, error) {
 	out := map[string]any{}
 	for _, a := range args {
-		k, v, ok := strings.Cut(a, "=")
+		k, v, ok := cutValue(a)
 		if !ok || k == "" {
 			return nil, fmt.Errorf("параметр «%s»: нужен вид ключ=значение", a)
 		}
@@ -26,6 +26,27 @@ func ParseArgs(args []string) (map[string]any, error) {
 		}
 	}
 	return out, nil
+}
+
+// cutValue делит «ключ=значение» по первому знаку «=» вне квадратных скобок: оператор фильтра
+// пишется внутри ключа — filter[>=CLOSEDATE]=2025-01-01, — и резать по его «=» нельзя.
+func cutValue(a string) (key, value string, ok bool) {
+	depth := 0
+	for i := 0; i < len(a); i++ {
+		switch a[i] {
+		case '[':
+			depth++
+		case ']':
+			if depth > 0 {
+				depth--
+			}
+		case '=':
+			if depth == 0 {
+				return a[:i], a[i+1:], true
+			}
+		}
+	}
+	return "", "", false
 }
 
 // ParseJSON читает параметры из JSON: строкой или из файла (@путь).
